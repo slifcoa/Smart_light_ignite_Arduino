@@ -30,7 +30,7 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");   
-  Serial.println(WiFi.localIP());gi
+  Serial.println(WiFi.localIP());
 
   server.begin();  
 }
