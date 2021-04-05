@@ -1,29 +1,68 @@
 #include <SoftwareSerial.h>
+#include <Servo.h> //Servo Library
 
 SoftwareSerial sw(2, 3); // Rx, Tx
 
 bool ledOn = false;
 
+//RGB Light Pins
 const int BLUE_PIN = 4;
 const int GREEN_PIN = 5;
 const int RED_PIN = 6;
 
+//Servo Pins
+const int SERVO_PIN = 13;
+Servo servo1;
+
+const char ledOnMsg[3] = "ON";
+const char ledOffMsg[4] = "OFF";
+const char boxOpenMsg[5] = "OPEN";
+const char boxCloseMsg[6] = "CLOSE";
+
 void setup() {
   // put your setup code here, to run once:
     Serial.begin(115200);
+    Serial.println("Initializing Arduino");
+
     pinMode(BLUE_PIN, OUTPUT);
     pinMode(GREEN_PIN, OUTPUT);
     pinMode(RED_PIN, OUTPUT);
     sw.begin(115200);
+
+    servo1.attach(SERVO_PIN);
+    spinServo(false);
+
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
      if (sw.available() > 0) {
-     char bfr[501];
-     memset(bfr,0, 501);
-     sw.readBytesUntil( '\n',bfr,500);
-     Serial.println(bfr);
+      char bfr[51];
+      memset(bfr,0, 51);
+      size_t sizey = sw.readBytes(bfr,50);
+      Serial.println(bfr);
+      Serial.print("Size:");
+      Serial.println(sizey);
+
+      if (strcmp(ledOnMsg, bfr) == 0){
+        Serial.println("Enabling Light");
+        ledOn = true;
+      }
+
+      if(strcmp(ledOffMsg, bfr) == 0) { 
+        Serial.println("Disabling Light");
+        ledOn = false;
+       }
+
+      if (strcmp(boxOpenMsg, bfr) == 0){
+        Serial.println("Opening Box");
+        spinServo(true);
+      }
+
+      if(strcmp(boxCloseMsg, bfr) == 0) { 
+        Serial.println("Closing Box");
+        spinServo(false);
+       }
    }
   updateLights();
 }
@@ -35,6 +74,23 @@ void updateLights() {
     digitalWrite(BLUE_PIN, LOW);
     digitalWrite(GREEN_PIN, LOW);
     digitalWrite(RED_PIN, LOW);
+    }
+  }
+
+ void spinServo(bool open) {
+
+    int position;
+
+    if(open) {
+        for(position = 20; position < 110; position += 2){
+          servo1.write(position);
+          delay(20);
+      }
+    } else {
+       for(position = 110; position >= 20; position -=1) {
+        servo1.write(position);
+        delay(20);
+      } 
     }
   }
 
@@ -54,7 +110,7 @@ void showSpectrum()
 
   {
     showRGB(x);  // Call RGBspectrum() with our new x
-    delay(10);   // Delay for 10 ms (1/100th of a second)
+    //delay(10);   // Delay for 10 ms (1/100th of a second)
   }
 }
 
